@@ -13,6 +13,7 @@ Thumbs.db
 # Optional local tooling
 .venv/
 venv/
+__pycache__/
+*.pyc
 
-# Regenerate with: python tools/render_solution_images.py
-solutions/
+# Solution PNGs are committed for reference; regenerate: npm run render-solutions

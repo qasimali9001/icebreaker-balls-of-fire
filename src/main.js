@@ -1,6 +1,7 @@
 import { Game } from "./core/Game.js";
 
 const canvas = document.getElementById("gameCanvas");
+const backBtn = document.getElementById("backBtn");
 const restartBtn = document.getElementById("restartBtn");
 const overlay = document.getElementById("overlay");
 const overlayRestartBtn = document.getElementById("overlayRestartBtn");
@@ -9,9 +10,13 @@ const game = new Game({
   canvas,
   debugSolution: new URLSearchParams(window.location.search).has("debugSolution"),
   ui: {
+    backBtn,
     restartBtn,
     overlay,
     overlayRestartBtn,
+    appShell: document.getElementById("app"),
+    levelSelect: document.getElementById("levelSelect"),
+    levelList: document.getElementById("levelList"),
     levelLabel: document.getElementById("levelLabel"),
     statusLabel: document.getElementById("statusLabel"),
     overlayTitle: document.getElementById("overlayTitle"),

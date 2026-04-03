@@ -33,18 +33,69 @@ export class Game {
       "./src/levels/level4.json",
       "./src/levels/level5.json",
       "./src/levels/level6.json",
+      "./src/levels/level7.json",
+      "./src/levels/level8.json",
+      "./src/levels/level9.json",
+      "./src/levels/level10.json",
     ];
 
     this._raf = null;
     this._lastTs = 0;
+    /** @type {ReturnType<typeof setTimeout> | null} */
+    this._winAdvanceTimer = null;
 
     /** When true, compute and draw one valid stroke after each load (?debugSolution). */
     this._debugSolution = Boolean(opts.debugSolution);
 
     // Restart must be a deliberate tap — not a swipe/drag that started on or crossed the button
     // (otherwise “drawing downward” near the HUD can accidentally fire restart).
+    this._bindTapOnly(this.ui.backBtn, () => this.returnToLevelSelect());
     this._bindTapOnly(this.ui.restartBtn, () => this.restartLevel());
     this._bindTapOnly(this.ui.overlayRestartBtn, () => this.restartLevel());
+  }
+
+  /** Leave gameplay and show the level picker (cancels pending auto-advance after a win). */
+  returnToLevelSelect() {
+    if (this.state.phase === GamePhase.MENU) return;
+    if (this._winAdvanceTimer != null) {
+      clearTimeout(this._winAdvanceTimer);
+      this._winAdvanceTimer = null;
+    }
+    this.setOverlayVisible(false);
+    this.setStatus("");
+    this.input.setEnabled(false);
+    this.player.setEnabled(false);
+    this.state.setPhase(GamePhase.MENU);
+    if (this.ui.appShell) this.ui.appShell.classList.add("hidden");
+    if (this.ui.levelSelect) this.ui.levelSelect.classList.remove("hidden");
+  }
+
+  _populateLevelSelect() {
+    const list = this.ui.levelList;
+    if (!list) return;
+    list.replaceChildren();
+    for (let i = 0; i < this._levels.length; i++) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = `Level ${i + 1}`;
+      const idx = i;
+      btn.addEventListener("click", () => {
+        void this.beginLevel(idx);
+      });
+      list.appendChild(btn);
+    }
+  }
+
+  _ensureGameLoop() {
+    if (this._raf != null) return;
+    this._lastTs = performance.now();
+    const tick = (ts) => {
+      const dt = Math.min(1 / 30, (ts - this._lastTs) / 1000);
+      this._lastTs = ts;
+      this.update(dt);
+      this._raf = requestAnimationFrame(tick);
+    };
+    this._raf = requestAnimationFrame(tick);
   }
 
   /**
@@ -94,23 +145,37 @@ export class Game {
   async start() {
     this.setOverlayVisible(false);
     this.setStatus("");
+    this.state.setPhase(GamePhase.MENU);
+
+    this._populateLevelSelect();
+    if (this.ui.levelSelect) this.ui.levelSelect.classList.remove("hidden");
+    if (this.ui.appShell) this.ui.appShell.classList.add("hidden");
+  }
+
+  /**
+   * Load a level and start gameplay (after level select).
+   * @param {number} levelIndex
+   */
+  async beginLevel(levelIndex) {
+    if (this._winAdvanceTimer != null) {
+      clearTimeout(this._winAdvanceTimer);
+      this._winAdvanceTimer = null;
+    }
+    if (this.ui.levelSelect) this.ui.levelSelect.classList.add("hidden");
+    if (this.ui.appShell) this.ui.appShell.classList.remove("hidden");
+
+    this.setOverlayVisible(false);
+    this.setStatus("");
     this.state.setPhase(GamePhase.LOADING);
 
-    await this.loadLevel(0);
+    await this.loadLevel(levelIndex);
 
     this.state.setPhase(GamePhase.PLAYING);
     if (!this._debugSolution) {
       this.setStatus("Draw a path.");
     }
 
-    this._lastTs = performance.now();
-    const tick = (ts) => {
-      const dt = Math.min(1 / 30, (ts - this._lastTs) / 1000);
-      this._lastTs = ts;
-      this.update(dt);
-      this._raf = requestAnimationFrame(tick);
-    };
-    this._raf = requestAnimationFrame(tick);
+    this._ensureGameLoop();
   }
 
   async loadLevel(levelIndex) {
@@ -151,6 +216,7 @@ export class Game {
   }
 
   restartLevel() {
+    if (this.state.phase === GamePhase.MENU) return;
     this.setOverlayVisible(false);
     this.setStatus("Restarting…");
     // After clearing the final level, restart the run from level 1.
@@ -198,6 +264,7 @@ export class Game {
         this.grid.meltCell(leftCell);
       },
       onArrived: () => {
+        this.grid.tryCollectKey(this.player.currentCell);
         if (this.grid.checkWin(this.player.currentCell)) this.win();
       },
     });
@@ -211,7 +278,8 @@ export class Game {
     const nextIndex = this.state.levelIndex + 1;
     if (nextIndex < this._levels.length) {
       this.setStatus("Level clear — next…");
-      window.setTimeout(async () => {
+      this._winAdvanceTimer = window.setTimeout(async () => {
+        this._winAdvanceTimer = null;
         this.setOverlayVisible(false);
         await this.loadLevel(nextIndex);
         this.state.setPhase(GamePhase.PLAYING);

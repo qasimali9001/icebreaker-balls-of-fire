@@ -101,6 +101,141 @@ export function createIceTileTexture(size = 256) {
 }
 
 /**
+ * Thicker / denser-looking ice: darker teal, subtle layered bands (reads clearly vs normal ice).
+ * @param {number} size
+ * @returns {THREE.CanvasTexture}
+ */
+export function createDeepIceTileTexture(size = 256) {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  fillTileCanvas(
+    canvas,
+    { r: 95, g: 175, b: 205 },
+    { r: 35, g: 95, b: 130 },
+    0.62
+  );
+  const ctx = canvas.getContext("2d");
+  ctx.save();
+  ctx.globalAlpha = 0.14;
+  for (let i = -2; i < 10; i++) {
+    const y = (i / 8) * size;
+    const grd = ctx.createLinearGradient(0, y, size, y + size * 0.08);
+    grd.addColorStop(0, "rgba(255,255,255,0)");
+    grd.addColorStop(0.5, "rgba(255,255,255,0.35)");
+    grd.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, y, size, size * 0.06);
+  }
+  ctx.restore();
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = tileTextureAnisotropy();
+  return tex;
+}
+
+/**
+ * Same base as normal ice, with a brass key icon (reads as “key on ice”).
+ * @param {number} size
+ * @returns {THREE.CanvasTexture}
+ */
+export function createKeyTileTexture(size = 256) {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  fillTileCanvas(
+    canvas,
+    { r: 210, g: 245, b: 255 },
+    { r: 120, g: 190, b: 230 },
+    0.55
+  );
+  const ctx = canvas.getContext("2d");
+  const cx = size * 0.5;
+  const cy = size * 0.5;
+  const sc = size / 256;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(sc, sc);
+  // Key (bow + shaft + teeth) in local ~256 space
+  ctx.fillStyle = "#d4af37";
+  ctx.strokeStyle = "#7a6520";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.arc(-42, 0, 26, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#c9a227";
+  ctx.fillRect(-14, -10, 88, 20);
+  ctx.strokeRect(-14, -10, 88, 20);
+  ctx.fillStyle = "#d4af37";
+  ctx.fillRect(58, -18, 14, 14);
+  ctx.fillRect(58, 4, 14, 14);
+  ctx.fillRect(74, -10, 22, 20);
+  ctx.restore();
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = tileTextureAnisotropy();
+  return tex;
+}
+
+/**
+ * Concrete / stone for locked block sides.
+ * @param {number} size
+ * @returns {THREE.CanvasTexture}
+ */
+export function createConcreteTileTexture(size = 256) {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  fillTileCanvas(
+    canvas,
+    { r: 148, g: 142, b: 132 },
+    { r: 88, g: 84, b: 76 },
+    0.5
+  );
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = tileTextureAnisotropy();
+  return tex;
+}
+
+/**
+ * Top face of locked block (seen from above): concrete + keyhole.
+ * @param {number} size
+ * @returns {THREE.CanvasTexture}
+ */
+export function createLockedTopTexture(size = 256) {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  fillTileCanvas(
+    canvas,
+    { r: 138, g: 132, b: 122 },
+    { r: 78, g: 74, b: 68 },
+    0.45
+  );
+  const ctx = canvas.getContext("2d");
+  const cx = size * 0.5;
+  const cy = size * 0.42;
+  ctx.fillStyle = "#141418";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, size * 0.07, size * 0.1, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy + size * 0.14, size * 0.055, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,0.35)";
+  ctx.lineWidth = Math.max(1, size / 200);
+  ctx.stroke();
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = tileTextureAnisotropy();
+  return tex;
+}
+
+/**
  * @param {number} size
  * @returns {THREE.CanvasTexture}
  */

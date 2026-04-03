@@ -18,12 +18,16 @@ export class Tile {
   isWalkable() {
     if (this.type === TileType.WALL) return false;
     if (this.type === TileType.VOID) return false;
+    if (this.type === TileType.LOCKED) return false;
     if (this.state === TileState.GONE) return false;
     return true;
   }
 
   canMelt() {
-    return this.type === TileType.ICE && this.state !== TileState.GONE;
+    if (this.state === TileState.GONE) return false;
+    if (this.type === TileType.ICE) return true;
+    if (this.type === TileType.DEEP_ICE) return true;
+    return false;
   }
 
   setGone() {
@@ -32,5 +36,15 @@ export class Tile {
       this.mesh.visible = false;
     }
   }
-}
 
+  /**
+   * First crossing leaves deep ice — second crossing clears it.
+   * @param {THREE.MeshBasicMaterial} crackedMat
+   */
+  setDeepCracked(crackedMat) {
+    this.state = TileState.CRACKED;
+    if (this.mesh && crackedMat) {
+      this.mesh.material = crackedMat;
+    }
+  }
+}

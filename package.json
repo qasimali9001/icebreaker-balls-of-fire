@@ -4,6 +4,6 @@
   "type": "module",
   "scripts": {
     "validate-levels": "python tools/check_level.py",
-    "render-solutions": "python tools/render_solution_images.py"
+    "render-solutions": "python tools/render_solutions.py"
   }
 }

@@ -14,7 +14,8 @@ for (const f of files.sort()) {
   const data = JSON.parse(fs.readFileSync(full, "utf8"));
   const res = validateLevelSolvability(data);
   if (res.solvable) {
-    console.log(`OK  ${f}  (${res.iceCount} ice)`);
+    const d = res.deepCount != null ? `, ${res.deepCount} deep` : "";
+    console.log(`OK  ${f}  (${res.iceCount} ice${d})`);
   } else {
     console.error(`FAIL ${f}  — ${res.reason}`);
     failed = true;

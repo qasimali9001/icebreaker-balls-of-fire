@@ -1,4 +1,5 @@
 import * as THREE from "https://unpkg.com/three@0.164.1/build/three.module.js";
+import { TileState, TileType } from "../grid/TileTypes.js";
 import { createFireballCoreTexture, createFireballHaloTexture } from "../rendering/proceduralTextures.js";
 
 export class PlayerController {
@@ -100,6 +101,7 @@ export class PlayerController {
     const last = this._getPathTailForQueueing();
 
     let prev = last;
+    let virtualKey = this.grid.hasKey;
     for (const next of cells) {
       const dr = Math.abs(prev.row - next.row);
       const dc = Math.abs(prev.col - next.col);
@@ -107,9 +109,13 @@ export class PlayerController {
         callbacks?.onStepInvalid?.();
         return;
       }
-      if (!this.grid.canEnter(next)) {
+      if (!this.grid.canEnterWithVirtualKey(next, virtualKey)) {
         callbacks?.onStepInvalid?.();
         return;
+      }
+      const t = this.grid.getTile(next);
+      if (t && t.type === TileType.KEY && t.state !== TileState.GONE) {
+        virtualKey = true;
       }
       prev = next;
     }

@@ -1,4 +1,5 @@
 export const GamePhase = Object.freeze({
+  MENU: "MENU",
   LOADING: "LOADING",
   PLAYING: "PLAYING",
   WIN: "WIN",

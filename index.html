@@ -7,13 +7,20 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div id="app">
+    <div id="levelSelect" class="level-select">
+      <h1 class="level-select-title">Icebreaker</h1>
+      <p class="level-select-hint">Choose a level</p>
+      <div id="levelList" class="level-list"></div>
+    </div>
+
+    <div id="app" class="hidden">
       <div id="hud">
         <div id="hudLeft">
           <div id="levelLabel">Level 1</div>
           <div id="statusLabel"></div>
         </div>
         <div id="hudRight">
+          <button id="backBtn" type="button" aria-label="Back to level select">Levels</button>
           <button id="restartBtn" type="button" aria-label="Restart">Restart</button>
         </div>
       </div>

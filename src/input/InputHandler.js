@@ -1,3 +1,5 @@
+import { TileType } from "../grid/TileTypes.js";
+
 export class InputHandler {
   /**
    * @param {{
@@ -29,8 +31,9 @@ export class InputHandler {
     this._gestureStartWorld = null;
     /** @type {Array<{row:number,col:number}>} */
     this._path = [];
-    /** @type {Set<string>} */
-    this._pathSet = new Set();
+    /** Visits per cell while drawing (deep ice allows 2). */
+    /** @type {Map<string, number>} */
+    this._visitCounts = new Map();
 
     this._onPointerDown = (e) => this._handlePointerDown(e);
     this._onPointerMove = (e) => this._handlePointerMove(e);
@@ -56,7 +59,7 @@ export class InputHandler {
     this._isDown = false;
     this._gestureStartWorld = null;
     this._path = [];
-    this._pathSet.clear();
+    this._visitCounts.clear();
   }
 
   _handlePointerDown(e) {
@@ -74,7 +77,8 @@ export class InputHandler {
 
     // Always anchor the path at the player's current tile.
     this._path = [{ ...anchor }];
-    this._pathSet = new Set([this._key(anchor)]);
+    this._visitCounts = new Map();
+    this._visitCounts.set(this._key(anchor), 1);
 
     const w = this.scene.worldFromPointer(e.clientX, e.clientY);
     this._gestureStartWorld = { x: w.x, z: w.z };
@@ -200,6 +204,21 @@ export class InputHandler {
     return `${cell.row},${cell.col}`;
   }
 
+  /** True if the stroke already passes through a key tile (unlocks virtual path into locks). */
+  _pathHasVirtualKey() {
+    for (const c of this._path) {
+      const t = this.grid.getTile(c);
+      if (t && t.type === TileType.KEY) return true;
+    }
+    return false;
+  }
+
+  _maxVisitsForCell(cell) {
+    const t = this.grid.getTile(cell);
+    if (t && t.type === TileType.DEEP_ICE) return 2;
+    return 1;
+  }
+
   _isCardinalAdjacent(a, b) {
     const dr = Math.abs(a.row - b.row);
     const dc = Math.abs(a.col - b.col);
@@ -212,15 +231,16 @@ export class InputHandler {
     // Only cardinal steps.
     if (!this._isCardinalAdjacent(last, next)) return false;
 
-    // Respect "cannot revisit" at the input level for clarity.
     const k = this._key(next);
-    if (this._pathSet.has(k)) return false;
+    const prevVisits = this._visitCounts.get(k) || 0;
+    const maxVisits = this._maxVisitsForCell(next);
+    if (prevVisits >= maxVisits) return false;
 
-    // Must be enterable at time of drawing (walls/void blocked).
-    if (!this.grid.canEnter(next)) return false;
+    const virtualKey = this._pathHasVirtualKey();
+    if (!this.grid.canEnter(next, virtualKey)) return false;
 
     this._path.push(next);
-    this._pathSet.add(k);
+    this._visitCounts.set(k, prevVisits + 1);
     return true;
   }
 
