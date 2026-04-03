@@ -21,7 +21,13 @@ const game = new Game({
   },
 });
 
-game.start();
+game.start().then(() => {
+  const bump = () => game.scene.resize();
+  bump();
+  requestAnimationFrame(bump);
+  setTimeout(bump, 150);
+  setTimeout(bump, 600);
+});
 
 // Prevent browser gestures from interfering with drawing.
 window.addEventListener(

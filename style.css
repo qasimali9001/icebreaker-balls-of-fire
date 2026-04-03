@@ -12,11 +12,18 @@
   box-sizing: border-box;
 }
 
+html {
+  height: 100%;
+  /* iOS Safari: fill screen when 100vh is wrong */
+  height: -webkit-fill-available;
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
-  height: 100%;
+  min-height: 100%;
+  min-height: 100dvh;
   background: radial-gradient(1200px 700px at 50% 0%, #0b1430 0%, var(--bg) 45%, #05060b 100%);
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
@@ -27,16 +34,21 @@ body {
 
 body {
   overflow: hidden;
+  min-height: -webkit-fill-available;
 }
 
 #app {
   position: fixed;
   inset: 0;
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
 }
 
 #hud {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -82,14 +94,16 @@ button:active {
 
 #canvasWrap {
   position: relative;
+  flex: 1;
   width: 100%;
-  height: 100%;
+  min-height: 0;
 }
 
 #gameCanvas {
   width: 100%;
   height: 100%;
   display: block;
+  touch-action: none;
 }
 
 #solutionPanel {
@@ -129,11 +143,14 @@ button:active {
 }
 
 #overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
+  z-index: 100;
   display: grid;
   place-items: center;
   padding: 18px;
+  padding-top: max(18px, env(safe-area-inset-top));
+  padding-bottom: max(18px, env(safe-area-inset-bottom));
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(8px);
 }

@@ -13,3 +13,6 @@ Thumbs.db
 # Optional local tooling
 .venv/
 venv/
+
+# Regenerate with: python tools/render_solution_images.py
+solutions/

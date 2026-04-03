@@ -144,6 +144,10 @@ export class Game {
 
     this.input.setEnabled(true);
     this.player.setEnabled(true);
+
+    // Mobile browsers often finish layout after first paint — match WebGL size to canvas.
+    this.scene.resize();
+    requestAnimationFrame(() => this.scene.resize());
   }
 
   restartLevel() {

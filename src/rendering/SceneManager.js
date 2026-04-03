@@ -42,9 +42,21 @@ export class SceneManager {
     this._resize();
   }
 
+  /** Call after layout changes (esp. mobile URL bar / rotation). */
+  resize() {
+    this._resize();
+  }
+
   _installResizeHandling() {
     const onResize = () => this._resize();
     window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", () => {
+      window.setTimeout(() => this._resize(), 200);
+    });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", onResize);
+      window.visualViewport.addEventListener("scroll", onResize);
+    }
 
     if (window.ResizeObserver) {
       this._resizeObserver = new ResizeObserver(() => this._resize());
