@@ -22,11 +22,8 @@ const game = new Game({
 });
 
 game.start().then(() => {
-  const bump = () => game.scene.resize();
-  bump();
-  requestAnimationFrame(bump);
-  setTimeout(bump, 150);
-  setTimeout(bump, 600);
+  game.scene.resize();
+  requestAnimationFrame(() => game.scene.resize());
 });
 
 // Prevent browser gestures from interfering with drawing.

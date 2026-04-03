@@ -1,5 +1,13 @@
 import * as THREE from "https://unpkg.com/three@0.164.1/build/three.module.js";
 
+/** Phones / tablets: fewer pixels + no MSAA saves a lot of GPU fill-rate. */
+function isTouchPrimaryDevice() {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return false;
+  if (window.matchMedia?.("(pointer: coarse)").matches) return true;
+  if (navigator.maxTouchPoints > 0 && window.innerWidth < 1024) return true;
+  return false;
+}
+
 export class SceneManager {
   /**
    * @param {{canvas: HTMLCanvasElement}} opts
@@ -7,17 +15,24 @@ export class SceneManager {
   constructor(opts) {
     this.canvas = opts.canvas;
 
+    this._touchPerf = isTouchPrimaryDevice();
+    /** @type {number | null} */
+    this._resizeRaf = null;
+
     this.scene = new THREE.Scene();
     // Flat "paper" look: no fog, no lighting-driven shading.
     this.scene.fog = null;
 
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
-      antialias: true,
+      antialias: !this._touchPerf,
       alpha: false,
       powerPreference: "high-performance",
+      stencil: false,
     });
-    this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    const dpr = window.devicePixelRatio || 1;
+    const dprCap = this._touchPerf ? 1.25 : 2;
+    this.renderer.setPixelRatio(Math.min(dprCap, dpr));
     this.renderer.setClearColor(0x070a12, 1);
 
     this.camera = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.1, 100);
@@ -30,12 +45,7 @@ export class SceneManager {
     this.raycaster = new THREE.Raycaster();
     this.groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
-    // Soft lighting for glacier walls (MeshStandardMaterial); floor tiles stay unlit MeshBasic.
-    const hemi = new THREE.HemisphereLight(0xc5e8ff, 0x1e2a3a, 0.85);
-    this.scene.add(hemi);
-    const sun = new THREE.DirectionalLight(0xffffff, 0.55);
-    sun.position.set(4.2, 10, 5.5);
-    this.scene.add(sun);
+    // Tiles + walls use MeshBasicMaterial — no scene lights (cheaper on mobile GPUs).
 
     this._resizeObserver = null;
     this._installResizeHandling();
@@ -48,20 +58,29 @@ export class SceneManager {
   }
 
   _installResizeHandling() {
-    const onResize = () => this._resize();
-    window.addEventListener("resize", onResize);
+    const scheduleResize = () => this._scheduleResize();
+    window.addEventListener("resize", scheduleResize);
     window.addEventListener("orientationchange", () => {
-      window.setTimeout(() => this._resize(), 200);
+      window.setTimeout(() => this._scheduleResize(), 200);
     });
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", onResize);
-      window.visualViewport.addEventListener("scroll", onResize);
+      window.visualViewport.addEventListener("resize", scheduleResize);
+      window.visualViewport.addEventListener("scroll", scheduleResize);
     }
 
     if (window.ResizeObserver) {
-      this._resizeObserver = new ResizeObserver(() => this._resize());
+      this._resizeObserver = new ResizeObserver(() => this._scheduleResize());
       this._resizeObserver.observe(this.canvas);
     }
+  }
+
+  /** Coalesce burst events (mobile URL bar) into one resize per frame. */
+  _scheduleResize() {
+    if (this._resizeRaf != null) return;
+    this._resizeRaf = requestAnimationFrame(() => {
+      this._resizeRaf = null;
+      this._resize();
+    });
   }
 
   _resize() {

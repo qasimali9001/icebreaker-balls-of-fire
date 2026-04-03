@@ -1,5 +1,10 @@
 import * as THREE from "https://unpkg.com/three@0.164.1/build/three.module.js";
 
+function tileTextureAnisotropy() {
+  if (typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches) return 1;
+  return 4;
+}
+
 /**
  * @param {number} t
  * @param {number} a
@@ -91,7 +96,7 @@ export function createIceTileTexture(size = 256) {
   );
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
+  tex.anisotropy = tileTextureAnisotropy();
   return tex;
 }
 
@@ -111,7 +116,7 @@ export function createStartTileTexture(size = 256) {
   );
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
+  tex.anisotropy = tileTextureAnisotropy();
   return tex;
 }
 
@@ -131,7 +136,7 @@ export function createExitTileTexture(size = 256) {
   );
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
+  tex.anisotropy = tileTextureAnisotropy();
   return tex;
 }
 
@@ -151,7 +156,7 @@ export function createWallTileTexture(size = 256) {
   );
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
+  tex.anisotropy = tileTextureAnisotropy();
   return tex;
 }
 

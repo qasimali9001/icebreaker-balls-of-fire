@@ -50,13 +50,10 @@ export class GridManager {
       ice: new THREE.MeshBasicMaterial({ map: iceMap, color: 0xffffff }),
       start: new THREE.MeshBasicMaterial({ map: startMap, color: 0xffffff }),
       exit: new THREE.MeshBasicMaterial({ map: exitMap, color: 0xffffff }),
-      wall: new THREE.MeshStandardMaterial({
+      // MeshBasic: same texture read, no PBR lighting — much cheaper on mobile than StandardMaterial.
+      wall: new THREE.MeshBasicMaterial({
         map: wallMap,
         color: 0xe8f6ff,
-        roughness: 0.48,
-        metalness: 0.06,
-        emissive: 0x0a1828,
-        emissiveIntensity: 0.15,
       }),
       void: new THREE.MeshBasicMaterial({ color: 0x05060b }),
     };

@@ -24,6 +24,7 @@ export class PlayerController {
     this._moveDuration = 0;
     this._fromWorld = new THREE.Vector3();
     this._toWorld = new THREE.Vector3();
+    this._lerpPos = new THREE.Vector3();
     this._fromCell = null;
     this._toCell = null;
     this._callbacks = null;
@@ -35,7 +36,8 @@ export class PlayerController {
     this.mesh = new THREE.Group();
     this.mesh.name = "Player";
 
-    const haloGeo = new THREE.CircleGeometry(0.44, 56);
+    const ringSeg = 32;
+    const haloGeo = new THREE.CircleGeometry(0.44, ringSeg);
     const haloMat = new THREE.MeshBasicMaterial({
       map: haloTex,
       transparent: true,
@@ -46,7 +48,7 @@ export class PlayerController {
     this._halo.rotation.x = -Math.PI / 2;
     this._halo.position.y = 0.004;
 
-    const coreGeo = new THREE.CircleGeometry(0.3, 56);
+    const coreGeo = new THREE.CircleGeometry(0.3, ringSeg);
     const coreMat = new THREE.MeshBasicMaterial({
       map: coreTex,
       transparent: true,
@@ -178,8 +180,8 @@ export class PlayerController {
 
     // Smoothstep.
     const tt = t * t * (3 - 2 * t);
-    const pos = new THREE.Vector3().lerpVectors(this._fromWorld, this._toWorld, tt);
-    this.mesh.position.copy(pos);
+    this._lerpPos.lerpVectors(this._fromWorld, this._toWorld, tt);
+    this.mesh.position.copy(this._lerpPos);
 
     if (t >= 1) {
       this._isMoving = false;
