@@ -1,0 +1,9 @@
+{
+  "name": "icebreaker-balls-of-fire",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate-levels": "python tools/check_level.py",
+    "render-solutions": "python tools/render_solution_images.py"
+  }
+}

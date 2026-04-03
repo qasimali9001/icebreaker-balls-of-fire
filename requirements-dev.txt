@@ -1,0 +1,2 @@
+# For tools/render_solution_images.py
+pillow>=9.0

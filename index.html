@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+    <title>Icebreaker - Balls of Fire</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="hud">
+        <div id="hudLeft">
+          <div id="levelLabel">Level 1</div>
+          <div id="statusLabel"></div>
+        </div>
+        <div id="hudRight">
+          <button id="restartBtn" type="button" aria-label="Restart">Restart</button>
+        </div>
+      </div>
+
+      <div id="canvasWrap">
+        <canvas id="gameCanvas"></canvas>
+        <div id="solutionPanel" class="hidden" aria-hidden="true">
+          <div id="solutionPanelTitle">Solution reference</div>
+          <img id="solutionImage" src="" alt="" />
+        </div>
+      </div>
+
+      <div id="overlay" class="hidden" role="dialog" aria-modal="true">
+        <div id="overlayCard">
+          <div id="overlayTitle">You win</div>
+          <div id="overlayBody"></div>
+          <div id="overlayActions">
+            <button id="overlayRestartBtn" type="button">Restart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
